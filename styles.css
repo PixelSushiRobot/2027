@@ -1405,10 +1405,159 @@ footer a:hover {
     transform: translateY(0);
 }
 
-/* After Jan 1, 2027 */
+/* ---------- After Jan 1, 2027 ---------- */
+
 .is-2027 .js-acquire {
     background: var(--red);
     color: var(--white);
+}
+
+.is-2027 .countdown-section {
+    background: var(--red);
+}
+
+.is-2027 .countdown-section::after {
+    content: 'WELP';
+}
+
+.is-2027 .countdown-num {
+    color: var(--red);
+}
+
+.is-2027 .countdown-caption {
+    color: var(--black);
+}
+
+.countdown-unit-label small {
+    display: block;
+    margin-top: .15rem;
+    font-size: .7rem;
+    letter-spacing: .15em;
+    color: var(--red);
+}
+
+/* Red banner would merge into the red clock, so it goes black */
+.is-2027 .dead-line {
+    background: var(--black);
+    animation: none;
+}
+
+.is-2027 .dead-line p {
+    color: var(--red);
+}
+
+/* The moment of zero: flatline → units fall → units rebuild */
+
+.flatline {
+    display: none;
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.flatline path {
+    fill: none;
+    stroke: var(--black);
+    stroke-width: 1.6;
+    stroke-linejoin: round;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+}
+
+.doom-flatline .flatline {
+    display: block;
+}
+
+.doom-flatline .flatline path {
+    animation: flatline-draw 1.1s linear forwards;
+}
+
+.doom-flatline .countdown-num {
+    opacity: .15;
+    transition: opacity .3s;
+}
+
+@keyframes flatline-draw {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+.doom-fall .countdown-unit {
+    animation: unit-fall .9s cubic-bezier(.5, 0, .9, .4) forwards;
+    animation-delay: calc(var(--i) * 120ms);
+}
+
+@keyframes unit-fall {
+    15% {
+        transform: rotate(calc(var(--r) * .3));
+    }
+
+    to {
+        transform: translateY(110vh) rotate(var(--r));
+    }
+}
+
+.doom-rebuild .countdown-unit {
+    animation: unit-rebuild .6s cubic-bezier(.2, 1.4, .4, 1) backwards;
+    animation-delay: calc(var(--i) * 100ms);
+}
+
+@keyframes unit-rebuild {
+    from {
+        transform: translateY(-160%) rotate(var(--r));
+    }
+}
+
+/* The coin stops spinning, wobbles, and falls flat. Final pose is static so reduced motion still gets it. */
+
+.coin-dead .coin-stack,
+.coin-dead .coin-shadow,
+.coin-dead .coin-inscription {
+    animation: none;
+}
+
+.coin-dead .coin-flare {
+    display: none;
+}
+
+.coin-dead .coin-stack {
+    transform: translateY(1.35em);
+}
+
+.coin-dead .coin-layers {
+    transform: translateY(.9em) rotateX(76deg);
+    animation: coin-topple 1.6s cubic-bezier(.3, 0, .4, 1) both;
+}
+
+.coin-dead .coin-shadow {
+    opacity: .5;
+    transform: translateX(-50%) scale(1.05);
+}
+
+@keyframes coin-topple {
+    0% {
+        transform: rotateY(-15deg) rotateZ(-28deg);
+    }
+
+    25% {
+        transform: rotateY(-5deg) rotateZ(-8deg);
+    }
+
+    45% {
+        transform: rotateY(-20deg) rotateZ(-34deg);
+    }
+
+    65% {
+        transform: rotateZ(-12deg);
+    }
+
+    100% {
+        transform: translateY(.9em) rotateX(76deg);
+    }
 }
 
 @keyframes nope {

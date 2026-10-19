@@ -18,41 +18,94 @@
 
     // ---------- Countdown + post-2027 state ----------
 
-    let afterlife = false;
-    const enterAfterlife = () => {
-        if (afterlife) return;
-        afterlife = true;
-        document.documentElement.classList.add('is-2027');
-        document.querySelector('.countdown-label').textContent = "It's 2027. Tezos may or may not still be here.";
-        document.querySelector('.countdown-caption').textContent = 'Either way, we predicted something. Congratulations to all holders of nothing.';
-        document.querySelectorAll('.js-acquire').forEach(btn => {
-            btn.textContent = 'Too late.';
-            btn.setAttribute('aria-disabled', 'true');
-        });
-    };
-
+    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const section = document.querySelector('.countdown-section');
+    const units = [...section.querySelectorAll('.countdown-unit')];
     const cd = ['cd-days', 'cd-hours', 'cd-mins', 'cd-secs'].map(id => document.getElementById(id));
+
+    // Per-unit stagger and tilt for the fall/rebuild animations
+    ['-18deg', '12deg', '-8deg', '22deg'].forEach((r, i) => {
+        units[i].style.setProperty('--i', i);
+        units[i].style.setProperty('--r', r);
+    });
 
     const localDoom = DEADLINE.toLocaleString(undefined, {
         month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short',
     });
     document.querySelector('.countdown-caption').textContent =
         `* Assumes Tezos lasts exactly until Jan 1, 2027, 00:00 UTC (${localDoom} for you). This is generous.`;
-    let cdTimer = 0;
-    const tick = () => {
-        const diff = DEADLINE - now();
-        if (diff <= 0) {
-            cd.forEach((el, i) => el.textContent = i ? '00' : '000');
-            clearInterval(cdTimer);
-            return enterAfterlife();
-        }
-        cd[0].textContent = String(Math.floor(diff / 86400000)).padStart(3, '0');
-        cd[1].textContent = String(Math.floor(diff % 86400000 / 3600000)).padStart(2, '0');
-        cd[2].textContent = String(Math.floor(diff % 3600000 / 60000)).padStart(2, '0');
-        cd[3].textContent = String(Math.floor(diff % 60000 / 1000)).padStart(2, '0');
+
+    const TICKER_2027 = [
+        '$2027', 'Tezos Still Here', 'Awkward', 'Extending Deadline To 2028?', 'Holders Vindicated (Somehow)',
+        'Expired ✓', 'Still No Metals', 'Now What?', 'Do Nothing Forever', '$2027',
+    ];
+
+    // The permanent post-deadline page: red clock counting up, rewritten copy
+    const applyAfterlife = () => {
+        document.documentElement.classList.add('is-2027');
+        document.querySelector('.countdown-label').textContent = 'Time Tezos has survived past its expiry date';
+        document.querySelector('.countdown-caption').textContent = "We'll update this when it dies. Probably.";
+        section.querySelectorAll('.countdown-unit-label').forEach(l => l.innerHTML = `${l.textContent}<small>overdue</small>`);
+        document.querySelectorAll('.ticker-group').forEach(g =>
+            g.innerHTML = TICKER_2027.map(t => `<span class="ticker-item">${t}</span>`).join(''));
+        document.querySelector('.dead-line p').textContent = 'WARNING — YOU ARE NOW HOLDING EXACTLY NOTHING. AS PROMISED.';
+        document.querySelector('.hero-eyebrow').textContent = 'Built on Tezos. Expired 2027.';
+        document.querySelector('.hero-sticker-3').textContent = 'Expired ✓';
+        document.querySelectorAll('.js-acquire').forEach(btn => {
+            btn.textContent = 'Too late.';
+            btn.setAttribute('aria-disabled', 'true');
+        });
     };
+
+    const killCoin = () => document.querySelector('.coin-hero').classList.add('coin-dead');
+
+    // Live viewers only: flatline, clock falls apart, coin topples, clock rebuilds counting up
+    let doomHold = false;
+    const playDoom = () => {
+        doomHold = true;
+        section.classList.add('doom-flatline');
+        setTimeout(() => {
+            section.classList.add('doom-fall');
+            killCoin();
+        }, 1300);
+        setTimeout(() => {
+            section.classList.remove('doom-flatline', 'doom-fall');
+            applyAfterlife();
+            section.classList.add('doom-rebuild');
+            doomHold = false;
+            tick();
+            setTimeout(() => section.classList.remove('doom-rebuild'), 1200);
+        }, 3000);
+    };
+
+    let afterlife = false, wasCounting = false;
+    const enterAfterlife = live => {
+        afterlife = true;
+        if (live && !reducedMotion) return playDoom();
+        killCoin();
+        applyAfterlife();
+    };
+
+    const pad = (n, len = 2) => String(n).padStart(len, '0');
+    const render = ms => {
+        cd[0].textContent = pad(Math.floor(ms / 86400000), 3);
+        cd[1].textContent = pad(Math.floor(ms % 86400000 / 3600000));
+        cd[2].textContent = pad(Math.floor(ms % 3600000 / 60000));
+        cd[3].textContent = pad(Math.floor(ms % 60000 / 1000));
+    };
+
+    // Counts down to the deadline, then keeps going as a count-up of time overdue
+    function tick() {
+        const diff = DEADLINE - now();
+        if (diff > 0) {
+            wasCounting = true;
+            return render(diff);
+        }
+        if (!afterlife) enterAfterlife(wasCounting);
+        render(doomHold ? 0 : -diff);
+    }
     tick();
-    if (!afterlife) cdTimer = setInterval(tick, 1000);
+    setInterval(tick, 1000);
 
     // ---------- Scroll reveal ----------
 

@@ -35,6 +35,8 @@ After the deadline, all buy buttons turn red and read "Too late."
 
 Counts down to **Jan 1, 2027, 00:00 UTC**, the same moment for everyone. The caption shows the local equivalent. Change `DEADLINE` at the top of `app.js` to move it.
 
+At zero, visitors watching live see the clock flatline and fall apart while the hero coin topples over; it then rebuilds in red and **counts up** the time Tezos has survived past its expiry. Later visitors (and anyone with reduced motion on) go straight to the red count-up. The ticker, warning banner, hero eyebrow and buy buttons all switch to post-2027 copy.
+
 ### Testing the deadline
 
 Append a query string to the URL:
